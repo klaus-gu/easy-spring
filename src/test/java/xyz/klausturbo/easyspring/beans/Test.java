@@ -15,7 +15,7 @@ class Test {
         DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
         BeanDefinition beanDefinition = new BeanDefinition(UserService.class);
         beanFactory.registerBeanDefinition("beanDefinition",beanDefinition);
-        UserService service = (UserService) beanFactory.getBean("beanDefinition");
-        service.register("guyue");
+        UserService service = (UserService) beanFactory.getBean("beanDefinition",new Object[]{"guyue"});
+        service.register();
     }
 }

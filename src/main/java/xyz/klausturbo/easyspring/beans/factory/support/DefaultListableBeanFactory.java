@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * TODO .
+ * 默认${@link BeanDefinition}的缓存列表 .
  * @author <a href="mailto:guyue375@outlook.com">Klaus.turbo</a>
  * @program easy-spring
  **/

@@ -7,7 +7,13 @@ package xyz.klausturbo.easyspring.beans;
  **/
 public class UserService {
     
-    public void register(String name) {
+    private final String name;
+    
+    public UserService(String name) {
+        this.name = name;
+    }
+    
+    public void register() {
         System.err.println("新注册用户：" + name);
     }
 }
