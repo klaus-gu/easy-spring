@@ -1,4 +1,4 @@
-package xyz.klausturbo.easyspring;
+package xyz.klausturbo.easyspring.beans.factory.config;
 
 /**
  * ${@link BeanDefinition} Bean 对象的定义，用于拆分一个完整的 Bean 对象.
@@ -7,13 +7,13 @@ package xyz.klausturbo.easyspring;
  **/
 public class BeanDefinition {
     
-    private Object bean;
+    private Class beanClass;
     
-    public BeanDefinition(Object bean) {
-        this.bean = bean;
+    public BeanDefinition(Class beanClass) {
+        this.beanClass = beanClass;
     }
     
-    public Object getBean() {
-        return bean;
+    public Class getBeanClass() {
+        return beanClass;
     }
 }
