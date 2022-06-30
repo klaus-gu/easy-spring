@@ -14,8 +14,12 @@ class Test {
     public static void main(String[] args) {
         DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
         BeanDefinition beanDefinition = new BeanDefinition(UserService.class);
-        beanFactory.registerBeanDefinition("beanDefinition",beanDefinition);
-        UserService service = (UserService) beanFactory.getBean("beanDefinition",new Object[]{"guyue"});
+        beanFactory.registerBeanDefinition("beanDefinition", beanDefinition);
+        // 有参构造
+        // UserService service = (UserService) beanFactory.getBean("beanDefinition",new Object[]{"guyue"});
+        // 无参构造
+        UserService service = (UserService) beanFactory.getBean("beanDefinition");
+        
         service.register();
     }
 }

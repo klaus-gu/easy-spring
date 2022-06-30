@@ -7,10 +7,13 @@ package xyz.klausturbo.easyspring.beans;
  **/
 public class UserService {
     
-    private final String name;
+    private String name;
     
     public UserService(String name) {
         this.name = name;
+    }
+    
+    public UserService() {
     }
     
     public void register() {
