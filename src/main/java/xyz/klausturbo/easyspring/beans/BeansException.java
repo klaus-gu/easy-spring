@@ -1,4 +1,4 @@
-package xyz.klausturbo.easyspring.beans.factory;
+package xyz.klausturbo.easyspring.beans;
 
 /**
  * TODO .

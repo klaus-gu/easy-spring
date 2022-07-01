@@ -1,7 +1,11 @@
 package xyz.klausturbo.easyspring.beans.factory.support;
 
-import xyz.klausturbo.easyspring.beans.factory.BeansException;
+import cn.hutool.core.bean.BeanUtil;
+import xyz.klausturbo.easyspring.beans.BeansException;
+import xyz.klausturbo.easyspring.beans.PropertyValue;
+import xyz.klausturbo.easyspring.beans.PropertyValues;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanDefinition;
+import xyz.klausturbo.easyspring.beans.factory.config.BeanRefrence;
 
 import java.lang.reflect.Constructor;
 
@@ -19,6 +23,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         Object bean = null;
         try {
             bean = createBeanInstance(beanDefinition, name, args);
+            // 给 Bean 填充属性
+            applyPropertyValues(name, bean, beanDefinition);
         } catch (BeansException e2) {
             throw new BeansException("Failed to instantiate [" + name + "]", e2);
         }
@@ -26,11 +32,28 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return bean;
     }
     
+    private void applyPropertyValues(String beanName, Object bean, BeanDefinition beanDefinition) {
+        try {
+            PropertyValues propertyValues = beanDefinition.getPropertyValues();
+            for (PropertyValue propertyValue : propertyValues.getPropertyValues()) {
+                String name = propertyValue.getName();
+                Object value = propertyValue.getValue();
+                if (value instanceof BeanRefrence) {
+                    BeanRefrence beanRefrence = (BeanRefrence) value;
+                    value = getBean(beanRefrence.getBeanName());
+                }
+                BeanUtil.setFieldValue(bean, name, value);
+            }
+        } catch (Exception e) {
+            throw new BeansException("Error setting property values:" + beanName);
+        }
+    }
+    
     private Object createBeanInstance(BeanDefinition beanDefinition, String name, Object[] args) {
-        Constructor usedConstructor = null;
-        Class beanClass = beanDefinition.getBeanClass();
-        Constructor[] constructors = beanClass.getDeclaredConstructors();
-        for (Constructor constructor : constructors) {
+        Constructor<?> usedConstructor = null;
+        Class<?> beanClass = beanDefinition.getBeanClass();
+        Constructor<?>[] constructors = beanClass.getDeclaredConstructors();
+        for (Constructor<?> constructor : constructors) {
             if (null != args && args.length == constructor.getParameterTypes().length) {
                 usedConstructor = constructor;
                 break;

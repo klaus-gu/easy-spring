@@ -1,6 +1,6 @@
 package xyz.klausturbo.easyspring.beans.factory.support;
 
-import xyz.klausturbo.easyspring.beans.factory.BeansException;
+import xyz.klausturbo.easyspring.beans.BeansException;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanDefinition;
 
 import java.lang.reflect.Constructor;
