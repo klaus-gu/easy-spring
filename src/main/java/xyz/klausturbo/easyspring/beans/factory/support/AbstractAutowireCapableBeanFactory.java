@@ -4,8 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import xyz.klausturbo.easyspring.beans.BeansException;
 import xyz.klausturbo.easyspring.beans.PropertyValue;
 import xyz.klausturbo.easyspring.beans.PropertyValues;
+import xyz.klausturbo.easyspring.beans.factory.config.AutowireCapableBeanFactory;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanDefinition;
-import xyz.klausturbo.easyspring.beans.factory.config.BeanRefrence;
+import xyz.klausturbo.easyspring.beans.factory.config.BeanPostProcessor;
+import xyz.klausturbo.easyspring.beans.factory.config.BeanReference;
 
 import java.lang.reflect.Constructor;
 
@@ -14,7 +16,8 @@ import java.lang.reflect.Constructor;
  * @author <a href="mailto:guyue375@outlook.com">Klaus.turbo</a>
  * @program easy-spring
  **/
-public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory {
+public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory
+        implements AutowireCapableBeanFactory {
     
     private InstaniationStrategy instaniationStrategy = new CglibSubclassingInstantiationStrategy();
     
@@ -25,11 +28,22 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             bean = createBeanInstance(beanDefinition, name, args);
             // 给 Bean 填充属性
             applyPropertyValues(name, bean, beanDefinition);
+            bean = initializeBean(name, bean, beanDefinition);
         } catch (BeansException e2) {
             throw new BeansException("Failed to instantiate [" + name + "]", e2);
         }
         addSingleton(name, bean);
         return bean;
+    }
+    
+    private Object initializeBean(String name, Object bean, BeanDefinition beanDefinition) {
+        Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, name);
+        invokeInitMethods(name, wrappedBean, beanDefinition);
+        wrappedBean = applyBeanPostProcessorsAfterInitialization(bean, name);
+        return wrappedBean;
+    }
+    
+    private void invokeInitMethods(String name, Object wrappedBean, BeanDefinition beanDefinition) {
     }
     
     private void applyPropertyValues(String beanName, Object bean, BeanDefinition beanDefinition) {
@@ -38,9 +52,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             for (PropertyValue propertyValue : propertyValues.getPropertyValues()) {
                 String name = propertyValue.getName();
                 Object value = propertyValue.getValue();
-                if (value instanceof BeanRefrence) {
-                    BeanRefrence beanRefrence = (BeanRefrence) value;
-                    value = getBean(beanRefrence.getBeanName());
+                if (value instanceof BeanReference) {
+                    BeanReference beanReference = (BeanReference) value;
+                    value = getBean(beanReference.getBeanName());
                 }
                 BeanUtil.setFieldValue(bean, name, value);
             }
@@ -68,5 +82,33 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     
     public void setInstaniationStrategy(InstaniationStrategy instaniationStrategy) {
         this.instaniationStrategy = instaniationStrategy;
+    }
+    
+    @Override
+    public Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, String beanName)
+            throws BeansException {
+        Object result = existingBean;
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            Object current = beanPostProcessor.postProcessBeforeInitialization(existingBean, beanName);
+            if (null == current) {
+                return result;
+            }
+            result = current;
+        }
+        return result;
+    }
+    
+    @Override
+    public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName)
+            throws BeansException {
+        Object result = existingBean;
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            Object current = beanPostProcessor.postProcessAfterInitialization(existingBean, beanName);
+            if (null == current) {
+                return result;
+            }
+            result = current;
+        }
+        return result;
     }
 }

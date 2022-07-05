@@ -13,4 +13,7 @@ public interface BeanFactory {
     public Object getBean(String beanName);
     
     public Object getBean(String beanName, Object[] args);
+    
+    <T> T getBean(String name, Class<T> requiredType) throws BeansException;
+    
 }

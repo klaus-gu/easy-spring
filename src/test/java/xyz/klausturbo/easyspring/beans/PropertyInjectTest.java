@@ -1,7 +1,7 @@
 package xyz.klausturbo.easyspring.beans;
 
 import xyz.klausturbo.easyspring.beans.factory.config.BeanDefinition;
-import xyz.klausturbo.easyspring.beans.factory.config.BeanRefrence;
+import xyz.klausturbo.easyspring.beans.factory.config.BeanReference;
 import xyz.klausturbo.easyspring.beans.factory.support.DefaultListableBeanFactory;
 
 /**
@@ -17,7 +17,7 @@ public class PropertyInjectTest {
         beanFactory.registerBeanDefinition("userDao", new BeanDefinition(UserDao.class));
         
         PropertyValues propertyValues = new PropertyValues();
-        propertyValues.addPropertyValue(new PropertyValue("userDao", new BeanRefrence("userDao")));
+        propertyValues.addPropertyValue(new PropertyValue("userDao", new BeanReference("userDao")));
         
         BeanDefinition beanDefinition = new BeanDefinition(UserService.class, propertyValues);
         beanFactory.registerBeanDefinition("userService", beanDefinition);

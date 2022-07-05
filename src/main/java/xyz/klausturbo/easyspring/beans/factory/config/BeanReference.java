@@ -5,11 +5,11 @@ package xyz.klausturbo.easyspring.beans.factory.config;
  * @author <a href="mailto:guyue375@outlook.com">Klaus.turbo</a>
  * @program easy-spring
  **/
-public class BeanRefrence {
+public class BeanReference {
     
     private final String beanName;
     
-    public BeanRefrence(String beanName) {
+    public BeanReference(String beanName) {
         this.beanName = beanName;
     }
     

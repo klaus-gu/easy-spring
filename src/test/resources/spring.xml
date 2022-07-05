@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+
+    <bean id="userDao" class="xyz.klausturbo.easyspring.beans.UserDao"/>
+
+    <bean id="userService" class="xyz.klausturbo.easyspring.beans.UserService">
+        <property name="name" value="10001111"/>
+        <property name="userDao" ref="userDao"/>
+    </bean>
+
+</beans>
