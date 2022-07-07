@@ -4,12 +4,15 @@ import cn.hutool.core.bean.BeanUtil;
 import xyz.klausturbo.easyspring.beans.BeansException;
 import xyz.klausturbo.easyspring.beans.PropertyValue;
 import xyz.klausturbo.easyspring.beans.PropertyValues;
+import xyz.klausturbo.easyspring.beans.factory.DisposableBean;
 import xyz.klausturbo.easyspring.beans.factory.config.AutowireCapableBeanFactory;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanDefinition;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanPostProcessor;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanReference;
+import xyz.klausturbo.easyspring.beans.factory.config.InitializingBean;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 /**
  * TODO .
@@ -32,18 +35,40 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         } catch (BeansException e2) {
             throw new BeansException("Failed to instantiate [" + name + "]", e2);
         }
+        registerDisposableBeanIfNecessary(name,bean,beanDefinition);
         addSingleton(name, bean);
         return bean;
     }
     
+    private void registerDisposableBeanIfNecessary(String name, Object bean, BeanDefinition beanDefinition) {
+        if (bean instanceof DisposableBean || (beanDefinition.getDestoryMethodName() !=null && beanDefinition.getDestoryMethodName()!="")){
+            registerDisposableBean(name,new DisposableBeanAdapter(bean,name,beanDefinition));
+        }
+    }
+    
     private Object initializeBean(String name, Object bean, BeanDefinition beanDefinition) {
         Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, name);
-        invokeInitMethods(name, wrappedBean, beanDefinition);
+        try {
+            invokeInitMethods(name, wrappedBean, beanDefinition);
+        } catch (Exception e) {
+            throw new BeansException("Invocation of init method of bean[" + name + "] failed", e);
+        }
         wrappedBean = applyBeanPostProcessorsAfterInitialization(bean, name);
         return wrappedBean;
     }
     
-    private void invokeInitMethods(String name, Object wrappedBean, BeanDefinition beanDefinition) {
+    private void invokeInitMethods(String beanName, Object bean, BeanDefinition beanDefinition) throws Exception {
+        if (bean instanceof InitializingBean) {
+            ((InitializingBean) bean).afterPropertiesSet();
+        }
+        String initMethodName = beanDefinition.getInitMethodName();
+        if (initMethodName != null && initMethodName != "") {
+            Method initMethod = beanDefinition.getBeanClass().getMethod(initMethodName);
+            if (initMethod == null){
+               throw new BeansException("Could not find an init method named '"+initMethodName+"' on bean with name '"+beanName+"'");
+            }
+            initMethod.invoke(bean);
+        }
     }
     
     private void applyPropertyValues(String beanName, Object bean, BeanDefinition beanDefinition) {

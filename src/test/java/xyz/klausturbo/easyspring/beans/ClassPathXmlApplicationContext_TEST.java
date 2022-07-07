@@ -11,6 +11,7 @@ public class ClassPathXmlApplicationContext_TEST {
     
     public static void main(String[] args) {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        context.registerShutdownHook();
         UserService userService = (UserService) context.getBean("userService");
         userService.register();
     }
