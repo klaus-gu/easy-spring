@@ -1,0 +1,1 @@
+[![OSCS Status](https://www.oscs1024.com/platform/badge/klaus-gu/easy-spring.svg?size=small)](https://www.oscs1024.com/project/klaus-gu/easy-spring?ref=badge_small)
