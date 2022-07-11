@@ -5,6 +5,7 @@ import xyz.klausturbo.easyspring.beans.factory.config.BeanDefinition;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanPostProcessor;
 import xyz.klausturbo.easyspring.beans.factory.config.ConfigurableBeanFactory;
 import xyz.klausturbo.easyspring.beans.factory.config.DefaultSingletonBeanRegistry;
+import xyz.klausturbo.easyspring.util.ClassUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.List;
  * @program easy-spring
  **/
 public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
+    
+    private ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
     
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
     
@@ -54,5 +57,9 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
     
     public List<BeanPostProcessor> getBeanPostProcessors() {
         return this.beanPostProcessors;
+    }
+    
+    public ClassLoader getBeanClassLoader(){
+        return this.classLoader;
     }
 }

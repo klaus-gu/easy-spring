@@ -4,6 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import xyz.klausturbo.easyspring.beans.BeansException;
 import xyz.klausturbo.easyspring.beans.PropertyValue;
 import xyz.klausturbo.easyspring.beans.PropertyValues;
+import xyz.klausturbo.easyspring.beans.factory.Aware;
+import xyz.klausturbo.easyspring.beans.factory.BeanClassLoaderAware;
+import xyz.klausturbo.easyspring.beans.factory.BeanFactoryAware;
+import xyz.klausturbo.easyspring.beans.factory.BeanNameAware;
 import xyz.klausturbo.easyspring.beans.factory.DisposableBean;
 import xyz.klausturbo.easyspring.beans.factory.config.AutowireCapableBeanFactory;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanDefinition;
@@ -35,18 +39,30 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         } catch (BeansException e2) {
             throw new BeansException("Failed to instantiate [" + name + "]", e2);
         }
-        registerDisposableBeanIfNecessary(name,bean,beanDefinition);
+        registerDisposableBeanIfNecessary(name, bean, beanDefinition);
         addSingleton(name, bean);
         return bean;
     }
     
     private void registerDisposableBeanIfNecessary(String name, Object bean, BeanDefinition beanDefinition) {
-        if (bean instanceof DisposableBean || (beanDefinition.getDestoryMethodName() !=null && beanDefinition.getDestoryMethodName()!="")){
-            registerDisposableBean(name,new DisposableBeanAdapter(bean,name,beanDefinition));
+        if (bean instanceof DisposableBean || (beanDefinition.getDestoryMethodName() != null
+                && beanDefinition.getDestoryMethodName() != "")) {
+            registerDisposableBean(name, new DisposableBeanAdapter(bean, name, beanDefinition));
         }
     }
     
     private Object initializeBean(String name, Object bean, BeanDefinition beanDefinition) {
+        if (bean instanceof Aware) {
+            if (bean instanceof BeanFactoryAware) {
+                ((BeanFactoryAware) bean).setBeanFactory(this);
+            }
+            if (bean instanceof BeanClassLoaderAware) {
+                ((BeanClassLoaderAware) bean).setClassLoader(getBeanClassLoader());
+            }
+            if (bean instanceof BeanNameAware) {
+                ((BeanNameAware) bean).setBeanName(name);
+            }
+        }
         Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, name);
         try {
             invokeInitMethods(name, wrappedBean, beanDefinition);
@@ -64,8 +80,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         String initMethodName = beanDefinition.getInitMethodName();
         if (initMethodName != null && initMethodName != "") {
             Method initMethod = beanDefinition.getBeanClass().getMethod(initMethodName);
-            if (initMethod == null){
-               throw new BeansException("Could not find an init method named '"+initMethodName+"' on bean with name '"+beanName+"'");
+            if (initMethod == null) {
+                throw new BeansException(
+                        "Could not find an init method named '" + initMethodName + "' on bean with name '" + beanName
+                                + "'");
             }
             initMethod.invoke(bean);
         }
