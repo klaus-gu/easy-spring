@@ -1,0 +1,16 @@
+<beans>
+    <bean id="catService" class="xyz.klausturbo.easyspring.beans.CatService"></bean>
+    
+    <bean class="xyz.klausturbo.easyspring.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
+    
+    <bean id="beforeAdvice" class="xyz.klausturbo.easyspring.beans.CatServiceBeforeAdvise"/>
+    
+    <bean id="methodInterceptor" class="xyz.klausturbo.easyspring.aop.framework.adapter.MethodBeforeAdviceInterceptor">
+        <property name="advice" ref="beforeAdvice"></property>
+    </bean>
+    
+    <bean id="pointcutAdvisor" class="xyz.klausturbo.easyspring.aop.aspectj.AspectJExpressionPointcutAdvisor">
+        <property name="expression" value="execution(* xyz.klausturbo.easyspring.beans.ICatService.*(..))"/>
+        <property name="advice" ref="methodInterceptor"/>
+    </bean>
+</beans>

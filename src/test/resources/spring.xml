@@ -3,9 +3,13 @@
 
     <bean id="userDao" class="xyz.klausturbo.easyspring.beans.UserDao"/>
 
-    <bean id="userService" class="xyz.klausturbo.easyspring.beans.UserService">
+    <bean id="userService" class="xyz.klausturbo.easyspring.beans.UserService" scope = "singleton">
         <property name="name" value="10001111"/>
         <property name="userDao" ref="userDao"/>
+        <property name="uId" value="1111"/>
+        <property name="iUserDao" ref="proxyUserDao"/>
     </bean>
+    
+    <bean id="proxyUserDao" class="xyz.klausturbo.easyspring.beans.ProxyFactoryBean"/>
 
 </beans>

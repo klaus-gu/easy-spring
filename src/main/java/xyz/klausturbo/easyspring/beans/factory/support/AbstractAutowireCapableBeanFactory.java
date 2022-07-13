@@ -14,6 +14,7 @@ import xyz.klausturbo.easyspring.beans.factory.config.BeanDefinition;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanPostProcessor;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanReference;
 import xyz.klausturbo.easyspring.beans.factory.config.InitializingBean;
+import xyz.klausturbo.easyspring.beans.factory.config.InstantiationAwareBeanPostProcessor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -32,6 +33,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     protected Object createBean(String name, BeanDefinition beanDefinition, Object[] args) {
         Object bean = null;
         try {
+            bean = resolveBeforeInstantiation(name, beanDefinition);
+            if (bean != null) {
+                return bean;
+            }
             bean = createBeanInstance(beanDefinition, name, args);
             // 给 Bean 填充属性
             applyPropertyValues(name, bean, beanDefinition);
@@ -40,11 +45,16 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             throw new BeansException("Failed to instantiate [" + name + "]", e2);
         }
         registerDisposableBeanIfNecessary(name, bean, beanDefinition);
-        addSingleton(name, bean);
+        if (beanDefinition.isSingleton()) {
+            addSingleton(name, bean);
+        }
         return bean;
     }
     
     private void registerDisposableBeanIfNecessary(String name, Object bean, BeanDefinition beanDefinition) {
+        if (!beanDefinition.isSingleton()) {
+            return;
+        }
         if (bean instanceof DisposableBean || (beanDefinition.getDestoryMethodName() != null
                 && beanDefinition.getDestoryMethodName() != "")) {
             registerDisposableBean(name, new DisposableBeanAdapter(bean, name, beanDefinition));
@@ -125,6 +135,27 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     
     public void setInstaniationStrategy(InstaniationStrategy instaniationStrategy) {
         this.instaniationStrategy = instaniationStrategy;
+    }
+    
+    protected Object resolveBeforeInstantiation(String beanName, BeanDefinition beanDefinition) {
+        Object bean = applyBeanPostProcessorsBeforeInstantiation(beanDefinition.getBeanClass(), beanName);
+        if (null != bean) {
+            bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
+        }
+        return bean;
+    }
+    
+    protected Object applyBeanPostProcessorsBeforeInstantiation(Class<?> beanClass, String beanName) {
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                Object result = ((InstantiationAwareBeanPostProcessor) beanPostProcessor)
+                        .postProcessBeforeInstantiation(beanClass, beanName);
+                if (null != result) {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
     
     @Override

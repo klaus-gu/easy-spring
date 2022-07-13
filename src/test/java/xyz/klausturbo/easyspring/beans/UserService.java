@@ -10,9 +10,17 @@ import xyz.klausturbo.easyspring.beans.factory.config.InitializingBean;
  **/
 public class UserService implements InitializingBean, DisposableBean {
     
+    private String uId;
+    
     private UserDao userDao;
     
+    private IUserDao iUserDao;
+    
     private String name;
+    
+    public String queryUserInfo(){
+        return iUserDao.queryUserName(uId);
+    }
     
     public UserService() {
     }

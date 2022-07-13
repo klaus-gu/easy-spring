@@ -1,10 +1,10 @@
 package xyz.klausturbo.easyspring.beans.factory.support;
 
 import xyz.klausturbo.easyspring.beans.BeansException;
+import xyz.klausturbo.easyspring.beans.factory.FactoryBean;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanDefinition;
 import xyz.klausturbo.easyspring.beans.factory.config.BeanPostProcessor;
 import xyz.klausturbo.easyspring.beans.factory.config.ConfigurableBeanFactory;
-import xyz.klausturbo.easyspring.beans.factory.config.DefaultSingletonBeanRegistry;
 import xyz.klausturbo.easyspring.util.ClassUtils;
 
 import java.util.ArrayList;
@@ -15,11 +15,11 @@ import java.util.List;
  * @author <a href="mailto:guyue375@outlook.com">Klaus.turbo</a>
  * @program easy-spring
  **/
-public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
-    
-    private ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
+public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport implements ConfigurableBeanFactory {
     
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
+    
+    private ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
     
     @Override
     public Object getBean(String beanName) {
@@ -36,13 +36,26 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         return (T) getBean(name);
     }
     
-    private Object doGetBean(String beanName, Object[] args) {
-        Object bean = getSingleton(beanName);
-        if (bean != null) {
-            return bean;
+    protected <T> T doGetBean(String beanName, Object[] args) {
+        Object shareInstance = getSingleton(beanName);
+        if (shareInstance != null) {
+            return (T) getObjectForBeanInstance(shareInstance, beanName);
         }
         BeanDefinition beanDefinition = getBeanDefinition(beanName);
-        return createBean(beanName, beanDefinition, args);
+        Object bean = createBean(beanName, beanDefinition, args);
+        return (T) getObjectForBeanInstance(bean, beanName);
+    }
+    
+    private Object getObjectForBeanInstance(Object beanInstance, String beanName) {
+        if (!(beanInstance instanceof FactoryBean)) {
+            return beanInstance;
+        }
+        Object object = getCachedObjectForFactoryBean(beanName);
+        if (object == null) {
+            FactoryBean<?> factoryBean = (FactoryBean<?>) beanInstance;
+            object = getObjectFromFactoryBean(factoryBean, beanName);
+        }
+        return object;
     }
     
     protected abstract BeanDefinition getBeanDefinition(String name);
@@ -59,7 +72,7 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         return this.beanPostProcessors;
     }
     
-    public ClassLoader getBeanClassLoader(){
+    public ClassLoader getBeanClassLoader() {
         return this.classLoader;
     }
 }
