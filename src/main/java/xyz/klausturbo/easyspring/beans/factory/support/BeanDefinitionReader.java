@@ -1,5 +1,6 @@
 package xyz.klausturbo.easyspring.beans.factory.support;
 
+import org.dom4j.DocumentException;
 import xyz.klausturbo.easyspring.beans.BeansException;
 import xyz.klausturbo.easyspring.core.io.Resource;
 import xyz.klausturbo.easyspring.core.io.ResourceLoader;
@@ -15,7 +16,7 @@ public interface BeanDefinitionReader {
     
     ResourceLoader getResourceLoader();
     
-    void loadBeanDefinitions(Resource resource) throws BeansException;
+    void loadBeanDefinitions(Resource resource) throws BeansException, DocumentException;
     
     void loadBeanDefinitions(Resource... resources) throws BeansException;
     
